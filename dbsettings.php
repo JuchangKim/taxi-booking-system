@@ -1,8 +1,8 @@
 <!-- dbsettings.php -->
 <!-- This file contains database connection settings for the application. -->
 <?php
-    $host = "webdev.aut.ac.nz";
-    $user = "ztd5646";
+    $host = "localhost";
+    $user = "root";
     $pswd = "";
-    $dbnm = "ztd5646";
+    $dbnm = "taxi_booking";
 ?>

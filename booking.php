@@ -18,13 +18,13 @@
         $queries = [];
 
         // Match each query using regular expressions
-        preg_match('/-- CREATE_BOOKING_TABLE\s*(CREATE TABLE .*?);/is', $q, $m1);
+        preg_match('/-- CREATE_TABLE\s*(CREATE TABLE .*?);/is', $q, $m1);
         preg_match('/-- GET_MAX_ID\s*(SELECT .*?);/is', $q, $m2);
         preg_match('/-- INSERT_BOOKING\s*(INSERT INTO .*?);/is', $q, $m3);
 
         // Store matched queries into array
         $queries["CREATE_BOOKING_TABLE"] = $m1[1] ?? null;
-        $queries["GET_MAX_ID"] = $m2[1] ?? null;
+        $queries["GET_MAX_ID"] = $m2[1] ?? 0; // Default to 0 if not found
         $queries["INSERT_BOOKING"] = $m3[1] ?? null;
 
         return $queries;
