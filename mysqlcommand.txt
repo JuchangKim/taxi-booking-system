@@ -1,0 +1,41 @@
+-- mysqlcommand.txt
+
+-- CREATE_TABLE
+CREATE TABLE IF NOT EXISTS bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ref VARCHAR(10) NOT NULL,             -- Booking reference (e.g., BRN00001)
+    cname VARCHAR(100) NOT NULL,          -- Customer name
+    phone VARCHAR(12) NOT NULL,           -- Phone number (10–12 digits)
+    unumber VARCHAR(10),                  -- Optional unit number
+    snumber VARCHAR(10) NOT NULL,         -- Street number
+    stname VARCHAR(100) NOT NULL,         -- Street name
+    sbname VARCHAR(100),                  -- Pickup suburb (optional)
+    dsbname VARCHAR(100),                 -- Destination suburb (optional)
+    pickup_date DATE NOT NULL,            -- Date of pickup
+    pickup_time TIME NOT NULL,            -- Time of pickup
+    created_at DATETIME NOT NULL,         -- Date and time the booking was submitted
+    status VARCHAR(20) NOT NULL           -- Booking status (e.g., 'unassigned', 'assigned')
+);
+
+-- GET_MAX_ID
+SELECT MAX(id) AS max_id FROM bookings;
+
+-- INSERT_BOOKING
+INSERT INTO bookings (
+    ref, cname, phone, unumber, snumber, stname,
+    sbname, dsbname, pickup_date, pickup_time, created_at, status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- UPDATE_STATUS
+UPDATE bookings SET status='assigned' WHERE ref=?;
+
+-- SELECT_BY_REF
+SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status 
+FROM bookings WHERE ref = ?;
+
+-- SELECT_WITHIN_2HRS
+SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status 
+FROM bookings 
+WHERE status='unassigned' 
+AND TIMESTAMPDIFF(MINUTE, NOW(), CONCAT(pickup_date, ' ', pickup_time)) BETWEEN 0 AND 120;

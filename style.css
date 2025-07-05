@@ -1,0 +1,108 @@
+/* General Layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background: url("images/Background.jpg") no-repeat center center fixed; 
+    background-color: #f8f8f8;
+    color: #222;
+}
+
+/* Form and Input Styling */
+form, .content {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    max-width: 1000px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Input Fields and Button Design */
+input[type="text"],
+input[type="date"],
+input[type="time"],
+button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Button States and Hover Effects */
+button {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+/* Hidden by default for confirm in admin*/
+#confirm {
+    display: none;
+    margin: 15px 0;
+    padding: 10px;
+    width: 1000px;
+    font-weight: bold;
+    color: green;
+    background-color: #e0f7e9;
+    border-radius: 5px;
+    border: 1px solid transparent;
+}
+
+/* Hidden by default for reference in booking*/
+#reference {
+    display: none;
+    margin: 15px 0;
+    padding: 10px;
+    width: 1000px;
+    font-weight: bold;
+    border-radius: 5px;
+    border: 1px solid transparent;
+}
+
+/* Success message style */
+#reference.success {
+    display: block;
+    color: green;
+    background-color: #e0f7e9;
+    border-color: #b2dfdb;
+}
+
+/* Error message style */
+#reference.error {
+    display: block;
+    color: white;
+    background-color: #f44336;
+    border-color: #d32f2f;
+}
+
+/* Admin Table  Design*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}

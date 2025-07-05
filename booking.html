@@ -1,0 +1,70 @@
+<!-- booking.html -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Taxi Booking</title>
+
+        <!-- Link to external JavaScript file that handles form validation and submission -->
+        <script type="text/javascript" src="booking.js"></script>
+
+        <!-- Link to external CSS file for styling -->
+        <link rel="stylesheet" href="style.css" />
+
+        <!-- Inline CSS only for booking.html -->
+        <style>
+            .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            }
+            
+            .form-row input,
+            .form-row button {
+            flex: 1;
+            }
+        </style>
+    </head>
+    <body>
+
+        <!-- Heading for the page -->
+        <h2>Book a Taxi</h2>
+
+        <!-- Placeholder div to show booking confirmation message after submission -->
+        <div id="reference"></div>
+
+        <!-- Booking form: collects user input and triggers booking.js on submit -->
+        <form id="bookingForm">
+            <div class="form-row">
+                <p><strong>Customer Name:</strong></p>
+                <input type="text" name="cname" placeholder="Customer Name" required />
+                <p><strong>Phone Number:</strong></p>
+                <input type="text" name="phone" placeholder="Phone Number" required />
+            </div>
+            <div class="form-row">
+                <p><strong>Unit Number:</strong></p>
+                <input type="text" name="unumber" placeholder="Unit Number" />
+                <p><strong>Street Number:</strong></p>
+                <input type="text" name="snumber" placeholder="Street Number" required />
+            </div>
+            <div class="form-row">
+                <p><strong>Street Name:</strong></p>
+                <input type="text" name="stname" placeholder="Street Name" required />
+                <p><strong>Surburb:</strong></p>
+                <input type="text" name="sbname" placeholder="Suburb" />
+            </div>
+            <div class="form-row">
+                <p><strong>Destination Suburb:</strong></p>
+                <input type="text" name="dsbname" placeholder="Destination Suburb" />
+                <p><strong>Pick Up Date:</strong></p>
+                <input type="date" name="date" id="date" required />
+            </div>
+            <div class="form-row">
+                <p><strong>Pick Up Time:</strong></p>
+                <input type="time" name="time" id="time" required />
+                <button type="submit">Book Taxi</button>
+            </div>
+        </form>
+
+    </body>
+</html>

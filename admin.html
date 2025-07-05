@@ -1,0 +1,42 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+
+    <!-- Link to external stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Link to external JavaScript -->
+    <script src="admin.js" defer></script>
+
+    <!-- Inline styling for text input field -->
+    <style>
+      input[type="text"] {
+        width: 300px;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Page Title -->
+    <h2>Admin Booking Search</h2>
+
+    <!-- Booking reference search input field -->
+    <input type="text" id="bsearch" name="bsearch" placeholder="Booking Ref (e.g., BRN00001)" />
+
+    <!-- Search button -->
+    <input type="button" id="sbutton" name="sbutton" value="Search" />
+    <br>
+
+    <!-- Confirmation or error message display -->
+    <div id="confirm"></div>
+    <br>
+    <!-- Container where booking search results will be injected via DOM -->
+    <div class="content" id="content"></div>
+
+  </body>
+</html>
