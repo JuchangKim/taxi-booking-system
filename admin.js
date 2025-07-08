@@ -53,18 +53,72 @@ document.addEventListener("DOMContentLoaded", () => {
       confirm.style.display = text.trim() ? "block" : "none";
   };
 
-  // Function to fetch bookings from the server (based on booking reference or all unassigned within 2 hours)
-  function fetchBookings(ref) {
-      const formData = new FormData();
-      formData.append("ref", ref);
+    // Delete a booking
+  window.deleteBooking = function deleteBooking(ref, event) {
+    if (!window.confirm(`Are you sure you want to delete booking ${ref}?`)) return;
 
-      // Send search request to server
-      fetch("admin.php", { method: "POST", body: formData })
-          .then((r) => r.text())
-          .then((html) => {
-              // Render returned booking table
-              content.innerHTML = html; 
-          });
-   }
+    const formData = new FormData();
+    formData.append("delete", ref);
 
-});
+    fetch("admin.php", { method: "POST", body: formData })
+        .then(r => r.text())
+        .then(msg => {
+            const row = event.target.closest("tr");
+            if (row) row.remove(); // Remove row from table
+            document.getElementById("confirm").innerHTML = msg;
+            document.getElementById("confirm").style.display = "block";
+        });
+    }
+
+    // Edit a booking
+  window.editBooking = function editBooking(dataJson) {
+        const data = JSON.parse(dataJson);
+
+        const form = document.createElement("form");
+        form.innerHTML = `
+            <h3>Edit Booking: ${data.ref}</h3>
+            <input type="hidden" name="ref" value="${data.ref}">
+            Name: <input name="cname" value="${data.cname}"><br>
+            Phone: <input name="phone" value="${data.phone}"><br>
+            Unit No: <input name="unumber" value=""><br>
+            Street No: <input name="snumber" value=""><br>
+            Street Name: <input name="stname" value=""><br>
+            Pickup Suburb: <input name="sbname" value="${data.sbname}"><br>
+            Destination: <input name="dsbname" value="${data.dsbname}"><br>
+            Date: <input type="date" name="pickup_date" value="${data.pickup_date}"><br>
+            Time: <input type="time" name="pickup_time" value="${data.pickup_time}"><br>
+            <button type="submit">Update Booking</button>
+        `;
+
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            formData.append("update", "1");
+
+            fetch("admin.php", { method: "POST", body: formData })
+                .then(r => r.text())
+                .then(msg => {
+                    document.getElementById("confirm").innerHTML = msg;
+                    fetchBookings(""); // refresh list
+                });
+        };
+
+        document.getElementById("content").innerHTML = "";
+        document.getElementById("content").appendChild(form);
+    }
+
+    // Function to fetch bookings from the server (based on booking reference or all unassigned within 2 hours)
+    function fetchBookings(ref) {
+        const formData = new FormData();
+        formData.append("ref", ref);
+
+        // Send search request to server
+        fetch("admin.php", { method: "POST", body: formData })
+            .then((r) => r.text())
+            .then((html) => {
+                // Render returned booking table
+                content.innerHTML = html; 
+            });
+    }
+
+    });

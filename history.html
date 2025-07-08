@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Booking History</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="history.js" defer></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h2 {
+      color: #007bff;
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 20px auto;
+      padding: 10px 24px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    #historyContent {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📜 All Booking History</h2>
+    <a href="index.php" class="btn">← Back to Main Panel</a>
+    <a href="export.php" class="btn" style="background-color: green;">⬇ Export CSV</a>
+    <div id="historyContent"></div>
+  </div>
+</body>
+</html>

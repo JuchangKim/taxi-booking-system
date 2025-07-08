@@ -39,3 +39,12 @@ SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status
 FROM bookings 
 WHERE status='unassigned' 
 AND TIMESTAMPDIFF(MINUTE, NOW(), CONCAT(pickup_date, ' ', pickup_time)) BETWEEN 0 AND 120;
+
+-- UPDATE_BOOKING
+UPDATE bookings SET 
+    cname = ?, phone = ?, unumber = ?, snumber = ?, stname = ?, 
+    sbname = ?, dsbname = ?, pickup_date = ?, pickup_time = ?
+WHERE ref = ?;
+
+-- DELETE_BOOKING
+DELETE FROM bookings WHERE ref = ?;
