@@ -31,7 +31,7 @@
 
     .btn {
       display: inline-block;
-      margin: 20px auto;
+      margin: 10px;
       padding: 10px 24px;
       font-size: 16px;
       background-color: #007bff;
@@ -50,14 +50,82 @@
     #historyContent {
       margin-top: 20px;
     }
+
+    #chatbot {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #f9f9f9;
+    }
+
+    #response {
+      margin-top: 10px;
+      background: #eef;
+      padding: 10px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>📜 All Booking History</h2>
     <a href="index.php" class="btn">← Back to Main Panel</a>
-    <a href="export.php" class="btn" style="background-color: green;">⬇ Export CSV</a>
+    <a href="export.php" class="btn btn-export" style="background-color: green;">⬇ Export CSV</a>
+
     <div id="historyContent"></div>
+
+    <div id="chatbot">
+      <h3>💬 Ask about booking history</h3>
+      <form id="queryForm">
+        <input type="text" id="question" placeholder="e.g. How many bookings are assigned?" style="width:80%;" required>
+        <button type="submit">Ask</button>
+      </form>
+      <div id="response"></div>
+    </div>
   </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+     // Step 0: Run the server-side Python script to create booking_summary.txt
+    fetch("http://127.0.0.1:8000/generate-summary")
+      .then(() => {
+        // Step 1: Update CSV silently
+        return fetch("export.php?mode=update");
+      })
+      .then(() => {
+        // Step 2: Load booking history table as HTML
+        return fetch("export.php?mode=html");
+      })
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById("historyContent").innerHTML = html;
+      });
+    // Step 3: Handle chatbot
+    document.getElementById('queryForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('question', document.getElementById('question').value);
+
+      const res = await fetch('http://127.0.0.1:8000/ask', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      document.getElementById('response').innerText = data.response || data.error;
+    });
+
+    // Step 4: Export button click for download
+    const exportBtn = document.querySelector(".btn-export");
+    if (exportBtn) {
+        exportBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            window.location.href = "export.php";
+        });
+    }
+  });
+</script>
 </body>
 </html>

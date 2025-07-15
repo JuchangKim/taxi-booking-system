@@ -1,0 +1,171 @@
+Booking History Summary
+========================
+
+Booking Ref: BRN00000
+Name       : Taxi
+Phone      : 12341231234
+Pickup     : I on 2025-07-06 at 00:25:00
+Destination: Address
+Status     : assigned
+------------------------------
+Booking Ref: BRN00000
+Name       : Taxi
+Phone      : 12341231234
+Pickup     : Home on 2025-07-06 at 00:30:00
+Destination: Hard
+Status     : assigned
+------------------------------
+Booking Ref: BRN00003
+Name       : Today
+Phone      : 12341231234
+Pickup     : Store on 2025-07-06 at 00:30:00
+Destination: Taxi Stop
+Status     : assigned
+------------------------------
+Booking Ref: BRN00004
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00005
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : assigned
+------------------------------
+Booking Ref: BRN00006
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:48:00
+Destination: Address
+Status     : assigned
+------------------------------
+Booking Ref: BRN00007
+Name       : Where
+Phone      : 0303030304
+Pickup     : Auckland on 2025-07-08 at 13:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00008
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00009
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 13:35:00
+Destination: Address
+Status     : assigned
+------------------------------
+Booking Ref: BRN00010
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00011
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00012
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00013
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00014
+Name       : Where
+Phone      : 03030303030
+Pickup     : Home on 2025-07-08 at 12:35:00
+Destination: Address
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00015
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : assigned
+------------------------------
+Booking Ref: BRN00017
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : assigned
+------------------------------
+Booking Ref: BRN00018
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00019
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00020
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00021
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00022
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00023
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00024
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
+Booking Ref: BRN00025
+Name       : ABC
+Phone      : 2391470923
+Pickup     : GHI on 2025-07-08 at 14:46:00
+Destination: FDVS
+Status     : unassigned
+------------------------------
