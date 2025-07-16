@@ -87,13 +87,9 @@
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-     // Step 0: Run the server-side Python script to create booking_summary.txt
-    fetch("http://127.0.0.1:8000/generate-summary")
-      .then(() => {
-        // Step 1: Update CSV silently
-        return fetch("export.php?mode=update");
-      })
+document.addEventListener("DOMContentLoaded", () => {
+    // Step 1: Update CSV silently
+    fetch("export.php?mode=update")
       .then(() => {
         // Step 2: Load booking history table as HTML
         return fetch("export.php?mode=html");
@@ -102,13 +98,14 @@
       .then(html => {
         document.getElementById("historyContent").innerHTML = html;
       });
+
     // Step 3: Handle chatbot
     document.getElementById('queryForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData();
       formData.append('question', document.getElementById('question').value);
 
-      const res = await fetch('http://127.0.0.1:8000/ask', {
+      const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
         body: formData
       });
@@ -125,7 +122,7 @@
             window.location.href = "export.php";
         });
     }
-  });
+});
 </script>
 </body>
 </html>

@@ -17,7 +17,7 @@
       const formData = new FormData();
       formData.append('question', document.getElementById('question').value);
 
-      const res = await fetch('http://localhost:8000/ask', {
+      const res = await fetch('/ask', {
         method: 'POST',
         body: formData
       });
