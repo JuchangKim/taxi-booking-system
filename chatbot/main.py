@@ -1,27 +1,24 @@
 from fastapi import FastAPI, Form
-import requests
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+import requests
+import json
 
 app = FastAPI()
 
 OLLAMA_URL = "http://ollama:11434/api/generate"
-MODEL_NAME = "mistral"
-
+MODEL_NAME = "tinyllama"
 
 # Allow CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (use ["http://localhost:8080"] for more security)
+    allow_origins=["*"],  # For production, restrict this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.post("/ask")
-async def ask_question(question: str = Form(...)):
-    with open("booking_summary.txt", "r", encoding="utf-8") as f:
-        summary_text = f.read()
-
+def ollama_stream(question, summary_text):
     prompt = f"""
 You are a taxi booking assistant.
 
@@ -37,18 +34,27 @@ Answer concisely based on the booking data.
     payload = {
         "model": MODEL_NAME,
         "prompt": prompt,
-        "stream": False
+        "stream": True
     }
 
-    response = requests.post(OLLAMA_URL, json=payload)
+    response = requests.post(OLLAMA_URL, json=payload, stream=True)
 
     if response.status_code != 200:
-        return {"error": response.text}
+        yield f"Error: {response.text}"
+        return
 
-    result = response.json()
-    generated = result.get("response", "").strip()
+    for line in response.iter_lines():
+        if line:
+            try:
+                data = json.loads(line.decode('utf-8'))
+                token = data.get("response", "")
+                yield token
+            except json.JSONDecodeError:
+                continue  # Ignore malformed lines (Ollama sometimes sends keep-alive)
 
-    if not generated:
-        return {"error": "Ollama returned empty output."}
+@app.post("/ask")
+async def ask_question(question: str = Form(...)):
+    with open("booking_summary.txt", "r", encoding="utf-8") as f:
+        summary_text = f.read()
 
-    return {"response": generated}
+    return StreamingResponse(ollama_stream(question, summary_text), media_type="text/plain")

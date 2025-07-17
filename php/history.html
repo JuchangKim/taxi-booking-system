@@ -101,18 +101,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Step 3: Handle chatbot
     document.getElementById('queryForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append('question', document.getElementById('question').value);
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('question', document.getElementById('question').value);
 
-      const res = await fetch('http://localhost:8000/ask', {
+    const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
         body: formData
-      });
-
-      const data = await res.json();
-      document.getElementById('response').innerText = data.response || data.error;
     });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let result = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value);
+        document.getElementById('response').innerText = result;
+    }
+});
 
     // Step 4: Export button click for download
     const exportBtn = document.querySelector(".btn-export");
