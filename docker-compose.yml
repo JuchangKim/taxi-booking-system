@@ -18,6 +18,9 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_URL=http://ollama:11434/api/generate
+      - BOOKING_HISTORY_PATH=/app/shared/booking_history.csv
+    volumes:
+      - ./php/booking_history.csv:/app/shared/booking_history.csv:ro
     depends_on:
       - ollama
 

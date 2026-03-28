@@ -7,7 +7,7 @@ import json
 app = FastAPI()
 
 OLLAMA_URL = "http://ollama:11434/api/generate"
-MODEL_NAME = "tinyllama"
+MODEL_NAME = "qwen3:8b"
 
 # Allow CORS
 app.add_middleware(
@@ -54,7 +54,7 @@ Answer concisely based on the booking data.
 
 @app.post("/ask")
 async def ask_question(question: str = Form(...)):
-    with open("booking_summary.txt", "r", encoding="utf-8") as f:
+    with open("/app/shared/booking_history.csv", "r", encoding="utf-8") as f:
         summary_text = f.read()
 
     return StreamingResponse(ollama_stream(question, summary_text), media_type="text/plain")
