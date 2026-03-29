@@ -115,12 +115,54 @@
                 exit;
             }
 
-            // Select a specific booking by reference number
+                      // Select a specific booking by reference number
             $stmt = $conn->prepare($queries["SELECT_BY_REF"]);
             $stmt->bind_param("s", $ref);
         } else {
-            // Select all unassigned bookings within next 2 hours
-            $stmt = $conn->prepare($queries["SELECT_WITHIN_2HRS"]);
+            // Show the full booking list on first load and whenever the search box is empty.
+            $result = $conn->query("SELECT * FROM bookings ORDER BY pickup_date, pickup_time");
+
+            if ($result->num_rows > 0) {
+                echo "<table><tr>
+                        <th>Booking Reference Number</th><th>Customer Name</th><th>Phone</th>
+                        <th>Pickup Suburb</th><th>Destination Suburb</th>
+                        <th>Pickup Date and Time</th><th>Status</th><th>Assign</th>
+                    </tr>";
+
+                while ($row = $result->fetch_assoc()) {
+                    $datetime = date("d/m/Y H:i", strtotime($row['pickup_date'] . ' ' . $row['pickup_time']));
+                    $button = $row['status'] === 'assigned'
+                        ? '<button disabled style="background-color: lightgray;">Assign</button>'
+                        : "<button onclick=\"assign('{$row['ref']}', event)\">Assign</button>";
+                    $editLink = "edit.html?" . http_build_query([
+                        "ref" => $row['ref'],
+                        "cname" => $row['cname'],
+                        "phone" => $row['phone'],
+                        "sbname" => $row['sbname'],
+                        "dsbname" => $row['dsbname'],
+                        "pickup_date" => $row['pickup_date'],
+                        "pickup_time" => $row['pickup_time']
+                    ]);
+                    $editBtn = "<a href=\"$editLink\"><button>Edit</button></a>";
+                    $deleteBtn = "<button onclick=\"deleteBooking('{$row['ref']}', event)\">Delete</button>";
+
+                    echo "<tr>
+                            <td>{$row['ref']}</td>
+                            <td>{$row['cname']}</td>
+                            <td>{$row['phone']}</td>
+                            <td>{$row['sbname']}</td>
+                            <td>{$row['dsbname']}</td>
+                            <td>$datetime</td>
+                            <td>{$row['status']}</td>
+                            <td>$button $editBtn $deleteBtn</td>
+                        </tr>";
+                }
+
+                echo "</table>";
+            } else {
+                echo "<p>No booking history found.</p>";
+            }
+            exit;
         }
 
         // Execute query and display results in a table

@@ -107,6 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("content").appendChild(form);
     }
 
+     // Load all bookings as soon as the admin page opens.
+    fetchBookings("");
+    
     // Function to fetch bookings from the server (based on booking reference or all unassigned within 2 hours)
     function fetchBookings(ref) {
         const formData = new FormData();

@@ -135,13 +135,31 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Step 1: Update CSV silently
     fetch("export.php?mode=update")
-      .then(() => {
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(text || "Failed to update booking history.");
+          });
+        }
+
         // Step 2: Load booking history table as HTML
         return fetch("export.php?mode=html");
       })
-      .then(r => r.text())
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(text || "Failed to load booking history.");
+          });
+        }
+
+        return response.text();
+      })
       .then(html => {
         document.getElementById("historyContent").innerHTML = html;
+      })
+      .catch((error) => {
+        document.getElementById("historyContent").innerHTML =
+          `<p style="color:red; font-weight:bold;">${error.message}</p>`;
       });
 
     // Step 3: Handle chatbot

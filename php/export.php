@@ -1,16 +1,41 @@
 <?php
 require_once("dbsettings.php");
 
-$conn = new mysqli($host, $user, $pswd, $dbnm);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+mysqli_report(MYSQLI_REPORT_OFF);
+
+function respondWithError(string $mode, string $message): void {
+    http_response_code(503);
+
+    if ($mode === 'html' || $mode === 'update') {
+        echo "<p style='color:red; font-weight:bold;'>$message</p>";
+    } else {
+        header('Content-Type: text/plain; charset=utf-8');
+        echo $message;
+    }
+
+    exit;
 }
 
 $filePath = "booking_history.csv";
-$csvFile = fopen($filePath, 'w');
-fputcsv($csvFile, ['Booking Reference', 'Name', 'Phone', 'Pickup Suburb', 'Destination', 'Date', 'Time', 'Status']);
+$mode = $_GET['mode'] ?? 'download';
+
+$conn = new mysqli($host, $user, $pswd, $dbnm);
+if ($conn->connect_error) {
+    respondWithError($mode, "Booking history is unavailable right now because the database connection failed.");
+}
 
 $result = $conn->query("SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status FROM bookings ORDER BY id ASC");
+if (!$result) {
+    respondWithError($mode, "Booking history could not be loaded from the database.");
+}
+
+$csvFile = fopen($filePath, 'w');
+if (!$csvFile) {
+    respondWithError($mode, "Booking history file could not be written.");
+}
+
+fputcsv($csvFile, ['Booking Reference', 'Name', 'Phone', 'Pickup Suburb', 'Destination', 'Date', 'Time', 'Status']);
+
 
 $rows = [];
 while ($row = $result->fetch_assoc()) {
@@ -21,8 +46,6 @@ while ($row = $result->fetch_assoc()) {
     ]);
 }
 fclose($csvFile);
-
-$mode = $_GET['mode'] ?? 'download';
 
 if ($mode === 'html') {
     if (count($rows) > 0) {
