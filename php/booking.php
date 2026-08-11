@@ -49,10 +49,7 @@
     $date = $_POST['date'];
     $time = $_POST['time'];
 
-    // Get the highest ID value to calculate the next booking reference number
-    $result = $conn->query($queries["GET_MAX_ID"]);
-    $row = $result->fetch_assoc();
-    $nextId = $row['max_id'] + 1;
+
 
     // Generate a unique booking reference in the format BRN00001
     $ref = "BRN" . str_pad($nextId, 5, "0", STR_PAD_LEFT);
@@ -77,6 +74,11 @@
     if (!$stmt->execute()) {
         die("<p style='color:white;'>Failed to insert booking: " . $stmt->error . "</p>");
     }
+
+    // Get the highest ID value to calculate the next booking reference number
+    $result = $conn->query($queries["GET_MAX_ID"]);
+    $row = $result->fetch_assoc();
+    $nextId = $row['max_id'] + 1;
 
     // Format date for confirmation display
     $formattedDate = date("d/m/Y", strtotime($date));

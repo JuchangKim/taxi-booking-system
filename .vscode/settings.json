@@ -1,3 +1,7 @@
 {
+<<<<<<< Updated upstream
     "python.analysis.typeCheckingMode": "standard"
+=======
+    "php.validate.executablePath": ""
+>>>>>>> Stashed changes
 }
