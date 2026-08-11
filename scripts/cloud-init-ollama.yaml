@@ -1,0 +1,66 @@
+#cloud-config
+# Cloud-init for provisioning an Ubuntu server to run the taxi-booking docker-compose stack with Ollama
+# Intended for EC2 user-data or Lightsail startup script (Ubuntu 22.04 LTS recommended, x86_64)
+
+package_update: true
+package_upgrade: true
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - apt-transport-https
+  - software-properties-common
+  - ufw
+  - jq
+
+runcmd:
+  - [ sh, -c, 'set -euo pipefail' ]
+
+  # Create deploy user if not present and add to sudo
+  - [ sh, -c, 'if ! id -u deployer >/dev/null 2>&1; then adduser --disabled-password --gecos "Deployer,,," deployer; usermod -aG sudo deployer; fi' ]
+
+  # Install Docker (official convenience script)
+  - [ sh, -c, 'curl -fsSL https://get.docker.com -o /tmp/get-docker.sh && sudo sh /tmp/get-docker.sh' ]
+  - [ sh, -c, 'sudo apt -y install docker-compose-plugin' ]
+  - [ sh, -c, 'sudo systemctl enable docker && sudo systemctl start docker' ]
+  - [ sh, -c, 'sudo usermod -aG docker deployer || true' ]
+
+  # Setup swap if RAM < 10GB to help with model pulls on small instances
+  - [ sh, -c, 'RAM_KB=$(grep MemTotal /proc/meminfo | awk "{print $2}"); RAM_MB=$((RAM_KB/1024)); if [ "$RAM_MB" -lt 10000 ] && [ ! -f /swapfile ]; then fallocate -l 4G /swapfile; chmod 600 /swapfile; mkswap /swapfile; swapon /swapfile; echo "/swapfile none swap sw 0 0" >> /etc/fstab; fi' ]
+
+  # Clone repository as deployer
+  - [ sh, -c, 'cd /home/deployer; if [ ! -d taxi-booking-system ]; then sudo -u deployer git clone https://github.com/JuchangKim/taxi-booking-system.git; fi' ]
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options && sudo chown -R deployer:deployer . ' ]
+
+  # Move into project
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options' ]
+
+  # Secure docker-compose.yml: bind ollama to localhost, remove public mysql port, expose PHP on 80
+  - [ sh, -c, 'DOC=docker-compose.yml; cp $DOC ${DOC}.orig; sed -i "s/- \"8080:80\"/- \"80:80\"/" $DOC || true; sed -i "s/\( - \"11434:11434\"\)/#\1/" $DOC || true; sed -i "s/11434:11434/127.0.0.1:11434:11434/" $DOC || true; # comment mysql ports
+    awk "/mysql:/, /volumes:/ { if (\$0 ~ /ports:/) { inports=1; print \"  # ports removed for mysql (bound to Docker network only)\"; next } if (inports && \$0 ~ /-/) { next } if (inports && \$0 ~ /[^[:space:]]/) { inports=0 } } { print }" $DOC > ${DOC}.tmp && mv ${DOC}.tmp $DOC || true' ]
+
+  # Create .env file for docker-compose with desired model name (Mistral 7B recommended)
+  - [ sh, -c, 'cat > /home/deployer/taxi-booking-system/aws-cheapest-deployment-options/.env <<"EOF"
+MODEL_NAME=mistral/mistral-7b-instruct
+OLLAMA_URL=http://ollama:11434/api/generate
+EOF
+' ]
+
+  # Ensure permissions
+  - [ sh, -c, 'chown deployer:deployer /home/deployer/taxi-booking-system -R' ]
+
+  # Start docker-compose (build containers)
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options && sudo docker compose up -d --build' ]
+
+  # Wait for Ollama container to be running, then pull the Mistral 7B model into Ollama via docker compose exec
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options; for i in $(seq 1 60); do if sudo docker compose ps --services --filter "status=running" | grep -q "ollama"; then echo "ollama appears running"; break; fi; echo "waiting for ollama... ($i)"; sleep 2; done' ]
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options; # attempt to pull model into ollama; retry if fails
+    for i in 1 2 3 4 5; do sudo docker compose exec -T ollama ollama pull mistral/mistral-7b-instruct && break || { echo "pull failed, retrying in 10s ($i)"; sleep 10; }; done' ]
+
+  # Restart chatbot so it uses the model name from .env
+  - [ sh, -c, 'cd /home/deployer/taxi-booking-system/aws-cheapest-deployment-options; sudo docker compose up -d --no-deps --build chatbot || true; sudo docker compose restart chatbot || true' ]
+
+  # Setup UFW: allow SSH/HTTP/HTTPS only, block DB and ollama from public
+  - [ sh, -c, 'ufw --force reset; ufw default deny incoming; ufw default allow outgoing; ufw allow 22/tcp; ufw allow 80/tcp; ufw allow 443/tcp; ufw enable' ]
+
+final_message: "Cloud-init finished: repository cloned and docker-compose started. If the Ollama model pull succeeded, Mistral-7B will be available."
