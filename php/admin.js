@@ -15,13 +15,14 @@ async function fetchBookings(ref = '', showAll = false) {
 
     try {
         const formData = new FormData();
-        // If showAll is true, request the full booking list from admin.php.
+        // If no reference is provided, request the full booking list from admin.php.
         // Otherwise, send the reference number to search for a specific booking.
-        if (showAll) {
+        if (showAll || ref === '') {
             formData.append('all', '1');
-        } else if (ref !== '') {
+        } else {
             formData.append('ref', ref);
         }
+
 
         const response = await fetch('admin.php', { method: 'POST', body: formData });
         const html = await response.text();
@@ -99,6 +100,7 @@ window.deleteBooking = async (ref, event) => {
 document.addEventListener('DOMContentLoaded', () => {
     const button = document.getElementById('sbutton');
     const search = document.getElementById('bsearch');
+    const allButton = document.getElementById('allbutton');
 
     button.addEventListener('click', () => {
         const ref = search.value.trim();
@@ -109,8 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         setConfirmMessage('', false);
-        const showAll = ref === '';
-        fetchBookings(ref, showAll);
+        fetchBookings(ref, false);
+    });
+
+    allButton.addEventListener('click', () => {
+        search.value = '';
+        setConfirmMessage('', false);
+        fetchBookings('', true);
     });
 
     // Pressing Enter in the search box should act like clicking Search.

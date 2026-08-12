@@ -1,5 +1,5 @@
 <?php
-require_once("dbsettings.php");
+require_once(__DIR__ . '/dbsettings.php');
 
 /**
  * Escape output for safe HTML rendering.
