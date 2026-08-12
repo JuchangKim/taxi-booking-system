@@ -50,12 +50,21 @@
     $time = $_POST['time'];
 
 
+    // Default to 1 if the query is missing or returns NULL (empty table)
+    $nextId = 1;
+    if (!empty($queries["GET_MAX_ID"] ) && is_string($queries["GET_MAX_ID"])) {
+        $result = $conn->query($queries["GET_MAX_ID"]);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $maxId = (isset($row['max_id']) && $row['max_id'] !== null) ? intval($row['max_id']) : 0;
+            $nextId = $maxId + 1;
+        }
+    }
 
     // Generate a unique booking reference in the format BRN00001
-    $ref = "BRN" . str_pad($nextId, 5, "0", STR_PAD_LEFT);
+    // Cast to string before using str_pad to avoid deprecation warnings when passing non-strings
+    $ref = "BRN" . str_pad((string)$nextId, 5, "0", STR_PAD_LEFT);
 
-    // Store the current timestamp for the booking record
-    $created = date("Y-m-d H:i:s");
 
     // Set initial booking status
     $status = "unassigned";
