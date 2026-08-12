@@ -14,6 +14,12 @@ fi
 
 cd "$PROJECT_DIR"
 
+# Create .env so docker-compose can use the chosen Ollama model.
+cat > .env <<EOF
+MODEL_NAME=${MODEL_ID}
+OLLAMA_URL=http://ollama:11434/api/generate
+EOF
+
 # Apply safe compose edits if needed
 cp docker-compose.yml docker-compose.yml.orig || true
 sed -i 's/- "8080:80"/- "80:80"/' docker-compose.yml || true

@@ -57,7 +57,10 @@ Notes & troubleshooting
 - If the model pull fails, SSH into the server (as deployer) and run the pull manually:
   sudo docker compose exec -T ollama ollama pull <model-id>
 - After pulling a model, the chatbot service reads MODEL_NAME from .env (created by cloud-init). To switch models, update .env and restart the chatbot container:
+  sudo nano /home/deployer/taxi-booking-system/aws-cheapest-deployment-options/.env
   sudo docker compose restart chatbot
+
+- To change the model before deployment, edit `MODEL_NAME` in `.env` or in `scripts/cloud-init-ollama.yaml` to the desired Ollama model ID, for example `mistral/mistral-7b-instruct`.
 
 Listing available models with Ollama (local check)
 - If you have the Ollama CLI installed on your machine/server, run:
