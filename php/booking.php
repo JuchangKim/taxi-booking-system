@@ -50,12 +50,20 @@
     $time = $_POST['time'];
 
     // Get the highest ID value to calculate the next booking reference number
-    $result = $conn->query($queries["GET_MAX_ID"]);
-    $row = $result->fetch_assoc();
-    $nextId = $row['max_id'] + 1;
+    // Default to 1 if the query is missing or returns NULL (empty table)
+    $nextId = 1;
+    if (!empty($queries["GET_MAX_ID"] ) && is_string($queries["GET_MAX_ID"])) {
+        $result = $conn->query($queries["GET_MAX_ID"]);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $maxId = (isset($row['max_id']) && $row['max_id'] !== null) ? intval($row['max_id']) : 0;
+            $nextId = $maxId + 1;
+        }
+    }
 
     // Generate a unique booking reference in the format BRN00001
-    $ref = "BRN" . str_pad($nextId, 5, "0", STR_PAD_LEFT);
+    // Cast to string before using str_pad to avoid deprecation warnings when passing non-strings
+    $ref = "BRN" . str_pad((string)$nextId, 5, "0", STR_PAD_LEFT);
 
     // Store the current timestamp for the booking record
     $created = date("Y-m-d H:i:s");
@@ -70,11 +78,33 @@
     
     // Bind parameters to the prepared statement with error handling
     if (!$stmt->bind_param("ssssssssssss", $ref, $cname, $phone, $unumber, $snumber, $stname, $sbname, $dsbname, $date, $time, $created, $status)) {
+        // Log server-side, then show a generic error to the user
+        error_log("booking.php: Parameter binding failed: " . $stmt->error);
         die("<p style='color:white;'>Parameter binding failed: " . $stmt->error . "</p>");
     }
+    
+    // Defensive: ensure created timestamp is set (bind_param binds by reference so this updates the bound value)
+    if (empty($created)) {
+        $created = date("Y-m-d H:i:s");
+    }
 
-    // Execute the prepared statement with error handling
+    // Prepare array snapshot of bound variables for validation/logging (do not expose to users)
+    $boundVars = [$ref, $cname, $phone, $unumber, $snumber, $stname, $sbname, $dsbname, $date, $time, $created, $status];
+
+    // Detect any empty required values and log them for debugging
+    $missing = [];
+    foreach ($boundVars as $i => $v) {
+        if ($v === null || $v === '') {
+            $missing[] = $i; // record index of missing value
+        }
+    }
+    if (!empty($missing)) {
+        error_log("booking.php: warning - empty fields at indexes: " . implode(',', $missing) . " values: " . json_encode($boundVars));
+    }
+
+    // Execute the prepared statement with error handling and logging
     if (!$stmt->execute()) {
+        error_log("booking.php: Failed to insert booking: " . $stmt->error . " boundValues: " . json_encode($boundVars));
         die("<p style='color:white;'>Failed to insert booking: " . $stmt->error . "</p>");
     }
 
