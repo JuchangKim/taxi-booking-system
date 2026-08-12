@@ -31,11 +31,11 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 UPDATE bookings SET status='assigned' WHERE ref=?;
 
 -- SELECT_BY_REF
-SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status 
+SELECT ref, cname, phone, unumber, snumber, stname, sbname, dsbname, pickup_date, pickup_time, status 
 FROM bookings WHERE ref = ?;
 
 -- SELECT_WITHIN_2HRS
-SELECT ref, cname, phone, sbname, dsbname, pickup_date, pickup_time, status 
+SELECT ref, cname, phone, unumber, snumber, stname, sbname, dsbname, pickup_date, pickup_time, status 
 FROM bookings 
 WHERE status='unassigned' 
 AND TIMESTAMPDIFF(MINUTE, NOW(), CONCAT(pickup_date, ' ', pickup_time)) BETWEEN 0 AND 120;

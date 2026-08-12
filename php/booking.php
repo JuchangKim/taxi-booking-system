@@ -1,120 +1,177 @@
 <!-- booking.php -->
 <?php
-    // Load database connection settings
-    require_once("dbsettings.php");
+require_once("dbsettings.php");
 
-    // Create a new MySQLi connection
-    $conn = new mysqli($host, $user, $pswd, $dbnm);
+/**
+ * Safe HTML encoding for user data displayed in the browser.
+ */
+function escapeHtml(string $value): string {
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
 
-    // Check for connection error
-    if ($conn->connect_error) die("<p style='color:white;'>Connection failed: " . $conn->connect_error . "</p>");
+/**
+ * Write a timestamped message to the PHP error log.
+ */
+function logger(string $message): void {
+    $timestamp = date('Y-m-d H:i:s');
+    error_log("[$timestamp] booking.php: $message");
+}
 
-    /*
-    * Function to load SQL queries from the mysqlcommand.txt file
-    * It extracts specific SQL statements by matching comment markers
-    */
-    function loadQueries($file) {
-        $q = file_get_contents($file);  // Read the entire SQL file
-        $queries = [];
-
-        // Match each query using regular expressions
-        preg_match('/-- CREATE_TABLE\s*(CREATE TABLE .*?);/is', $q, $m1);
-        preg_match('/-- GET_MAX_ID\s*(SELECT .*?);/is', $q, $m2);
-        preg_match('/-- INSERT_BOOKING\s*(INSERT INTO .*?);/is', $q, $m3);
-
-        // Store matched queries into array
-        $queries["CREATE_BOOKING_TABLE"] = $m1[1] ?? null;
-        $queries["GET_MAX_ID"] = $m2[1] ?? 0; // Default to 0 if not found
-        $queries["INSERT_BOOKING"] = $m3[1] ?? null;
-
-        return $queries;
+/**
+ * Load named SQL statements from the external mysqlcommand.txt file.
+ */
+function loadQueries(string $filename): array {
+    $content = @file_get_contents($filename);
+    if ($content === false) {
+        return [];
     }
 
-    // Load queries from external file
-    $queries = loadQueries("mysqlcommand.txt");
+    $queries = [];
+    $blocks = [
+        'CREATE_TABLE' => '/-- CREATE_TABLE\s*(CREATE TABLE .*?);/is',
+        'GET_MAX_ID' => '/-- GET_MAX_ID\s*(SELECT .*?);/is',
+        'INSERT_BOOKING' => '/-- INSERT_BOOKING\s*(INSERT INTO .*?);/is',
+    ];
 
-    // Run table creation SQL if needed
-    if ($queries["CREATE_BOOKING_TABLE"]) {
-        $conn->query($queries["CREATE_BOOKING_TABLE"]);
-    }
-
-    // Collect form data sent via POST request
-    $cname = $_POST['cname'];
-    $phone = $_POST['phone'];
-    $unumber = $_POST['unumber'];
-    $snumber = $_POST['snumber'];
-    $stname = $_POST['stname'];
-    $sbname = $_POST['sbname'];
-    $dsbname = $_POST['dsbname'];
-    $date = $_POST['date'];
-    $time = $_POST['time'];
-
-    // Get the highest ID value to calculate the next booking reference number
-    // Default to 1 if the query is missing or returns NULL (empty table)
-    $nextId = 1;
-    if (!empty($queries["GET_MAX_ID"] ) && is_string($queries["GET_MAX_ID"])) {
-        $result = $conn->query($queries["GET_MAX_ID"]);
-        if ($result) {
-            $row = $result->fetch_assoc();
-            $maxId = (isset($row['max_id']) && $row['max_id'] !== null) ? intval($row['max_id']) : 0;
-            $nextId = $maxId + 1;
+    foreach ($blocks as $name => $pattern) {
+        if (preg_match($pattern, $content, $matches)) {
+            $queries[$name] = trim($matches[1]) . ";";
         }
     }
 
-    // Generate a unique booking reference in the format BRN00001
-    // Cast to string before using str_pad to avoid deprecation warnings when passing non-strings
-    $ref = "BRN" . str_pad((string)$nextId, 5, "0", STR_PAD_LEFT);
+    return $queries;
+}
 
-    // Store the current timestamp for the booking record
-    $created = date("Y-m-d H:i:s");
+/**
+ * Validate booking form input and return an array of cleaned values.
+ */
+function validateBookingInput(array $posted, array &$errors): array {
+    $errors = [];
+    $data = [];
 
-    // Set initial booking status
-    $status = "unassigned";
+    $data['cname'] = trim($posted['cname'] ?? '');
+    $data['phone'] = trim($posted['phone'] ?? '');
+    $data['unumber'] = trim($posted['unumber'] ?? '');
+    $data['snumber'] = trim($posted['snumber'] ?? '');
+    $data['stname'] = trim($posted['stname'] ?? '');
+    $data['sbname'] = trim($posted['sbname'] ?? '');
+    $data['dsbname'] = trim($posted['dsbname'] ?? '');
+    $data['date'] = trim($posted['date'] ?? '');
+    $data['time'] = trim($posted['time'] ?? '');
 
-    // Prepare the insert query with error handling
-    if (!$stmt = $conn->prepare($queries["INSERT_BOOKING"])) {
-        die("<p style='color:white;'>Error preparing SQL: " . $conn->error . "</p>");
-    }
-    
-    // Bind parameters to the prepared statement with error handling
-    if (!$stmt->bind_param("ssssssssssss", $ref, $cname, $phone, $unumber, $snumber, $stname, $sbname, $dsbname, $date, $time, $created, $status)) {
-        // Log server-side, then show a generic error to the user
-        error_log("booking.php: Parameter binding failed: " . $stmt->error);
-        die("<p style='color:white;'>Parameter binding failed: " . $stmt->error . "</p>");
-    }
-    
-    // Defensive: ensure created timestamp is set (bind_param binds by reference so this updates the bound value)
-    if (empty($created)) {
-        $created = date("Y-m-d H:i:s");
+    if ($data['cname'] === '') {
+        $errors[] = 'Customer name is required.';
     }
 
-    // Prepare array snapshot of bound variables for validation/logging (do not expose to users)
-    $boundVars = [$ref, $cname, $phone, $unumber, $snumber, $stname, $sbname, $dsbname, $date, $time, $created, $status];
+    if (!preg_match('/^\d{10,12}$/', $data['phone'])) {
+        $errors[] = 'Phone number must be 10 to 12 digits.';
+    }
 
-    // Detect any empty required values and log them for debugging
-    $missing = [];
-    foreach ($boundVars as $i => $v) {
-        if ($v === null || $v === '') {
-            $missing[] = $i; // record index of missing value
+    if ($data['snumber'] === '') {
+        $errors[] = 'Street number is required.';
+    }
+
+    if ($data['stname'] === '') {
+        $errors[] = 'Street name is required.';
+    }
+
+    if ($data['date'] === '' || $data['time'] === '') {
+        $errors[] = 'Pickup date and time are required.';
+    } else {
+        $pickup = DateTime::createFromFormat('Y-m-d H:i', $data['date'] . ' ' . $data['time']);
+        $now = new DateTime('now');
+        if (!$pickup) {
+            $errors[] = 'Pickup date/time format is invalid.';
+        } elseif ($pickup < $now) {
+            $errors[] = 'Pickup date/time must not be in the past.';
         }
     }
-    if (!empty($missing)) {
-        error_log("booking.php: warning - empty fields at indexes: " . implode(',', $missing) . " values: " . json_encode($boundVars));
+
+    if (count($errors) > 0) {
+        return $data;
     }
 
-    // Execute the prepared statement with error handling and logging
-    if (!$stmt->execute()) {
-        error_log("booking.php: Failed to insert booking: " . $stmt->error . " boundValues: " . json_encode($boundVars));
-        die("<p style='color:white;'>Failed to insert booking: " . $stmt->error . "</p>");
-    }
+    return $data;
+}
 
-    // Format date for confirmation display
-    $formattedDate = date("d/m/Y", strtotime($date));
+$queries = loadQueries("mysqlcommand.txt");
+if (empty($queries['CREATE_TABLE']) || empty($queries['GET_MAX_ID']) || empty($queries['INSERT_BOOKING'])) {
+    logger('Required SQL queries are missing from mysqlcommand.txt.');
+    http_response_code(500);
+    die("<p style='color:white;'>Server configuration error. Please contact the site administrator.</p>");
+}
 
-    // Output booking confirmation message to user
-    echo "<p>Thank you for your booking!<br>
-        <br>
-        Booking reference number: $ref<br>
-        Pickup time: $time<br>
-        Pickup date: $formattedDate</p>";
+$conn = new mysqli($host, $user, $pswd, $dbnm);
+if ($conn->connect_error) {
+    logger('Database connection failed: ' . $conn->connect_error);
+    http_response_code(500);
+    die("<p style='color:white;'>Connection failed. Please try again later.</p>");
+}
+
+if (!$conn->query($queries['CREATE_TABLE'])) {
+    logger('Unable to create booking table: ' . $conn->error);
+    http_response_code(500);
+    die("<p style='color:white;'>Server error while initializing booking database.</p>");
+}
+
+$validationErrors = [];
+$input = validateBookingInput($_POST, $validationErrors);
+if (!empty($validationErrors)) {
+    logger('Validation failed: ' . implode(' | ', $validationErrors));
+    $errorText = escapeHtml(implode(' ', $validationErrors));
+    die("<p style='color:white;'>$errorText</p>");
+}
+
+$nextId = 1;
+$result = $conn->query($queries['GET_MAX_ID']);
+if ($result) {
+    $row = $result->fetch_assoc();
+    $maxId = isset($row['max_id']) && $row['max_id'] !== null ? intval($row['max_id']) : 0;
+    $nextId = $maxId + 1;
+}
+
+$ref = 'BRN' . str_pad((string)$nextId, 5, '0', STR_PAD_LEFT);
+$created = date('Y-m-d H:i:s');
+$status = 'unassigned';
+
+$stmt = $conn->prepare($queries['INSERT_BOOKING']);
+if (!$stmt) {
+    logger('Error preparing insert statement: ' . $conn->error);
+    http_response_code(500);
+    die("<p style='color:white;'>Failed to save booking. Please try again later.</p>");
+}
+
+if (!$stmt->bind_param(
+    'ssssssssssss',
+    $ref,
+    $input['cname'],
+    $input['phone'],
+    $input['unumber'],
+    $input['snumber'],
+    $input['stname'],
+    $input['sbname'],
+    $input['dsbname'],
+    $input['date'],
+    $input['time'],
+    $created,
+    $status
+)) {
+    logger('Error binding parameters: ' . $stmt->error);
+    http_response_code(500);
+    die("<p style='color:white;'>Failed to save booking. Please try again later.</p>");
+}
+
+if (!$stmt->execute()) {
+    logger('Failed to insert booking: ' . $stmt->error . ' values: ' . json_encode($input));
+    http_response_code(500);
+    die("<p style='color:white;'>Failed to save booking. Please try again later.</p>");
+}
+
+$formattedDate = escapeHtml(date('d/m/Y', strtotime($input['date'])));
+$formattedTime = escapeHtml($input['time']);
+$reference = escapeHtml($ref);
+
+logger("Created booking $reference for {$input['cname']}.");
+
+echo "<p>Thank you for your booking!<br><br>Booking reference number: $reference<br>Pickup time: $formattedTime<br>Pickup date: $formattedDate</p>";
 ?>

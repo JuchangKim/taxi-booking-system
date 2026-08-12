@@ -1,0 +1,21 @@
+2026-08-12 13:53:47 +12:00 - Fix log for taxi booking system
+
+Updated files:
+- php/booking.php: added server-side validation, error handling, safe HTML escaping, and timestamped error logging.
+- php/admin.php: rewrote request handling, fixed broken control flow, added validation and safe output escaping, used SELECT_WITHIN_2HRS by default, and improved assignment/delete/update response handling.
+- php/mysqlcommand.txt: updated SELECT_BY_REF and SELECT_WITHIN_2HRS queries to include unumber, snumber, and stname for edit support.
+- php/admin.js: cleaned up AJAX fetch handling, added error display, and made status updates more robust.
+- php/edit.html: corrected confirmation container id from "confrim" to "confirm".
+- php/edit.js: rebuilt edit form with safe DOM construction and improved validation/error handling.
+- php/style.css: adjusted confirm and reference messaging containers for responsive width.
+- php/booking.html: fixed typo in suburb label.
+- php/export.php: added HTML escaping for booking history export table.
+
+Validation performed:
+- PHP syntax checked using php:8.2-cli for php/booking.php, php/admin.php, and php/export.php.
+- JavaScript syntax validated using Node for php/admin.js and php/edit.js.
+
+Additional updates on 2026-08-12 14:22:36 +12:00:
+- php/admin.js: added comments describing the new blank-search behavior and show-all request.
+- php/admin.js: added Enter-key support on the search field and blank-search handling to load all bookings.
+- Verified the Docker Compose app is running and the admin panel UI is live at http://127.0.0.1:8080/admin.html.
