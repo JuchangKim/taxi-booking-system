@@ -3,6 +3,10 @@ require_once("dbsettings.php");
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
+function escapeHtml(string $value): string {
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
 function respondWithError(string $mode, string $message): void {
     http_response_code(503);
 
@@ -57,14 +61,14 @@ if ($mode === 'html') {
         </tr>";
         foreach ($rows as $row) {
             echo "<tr>
-                <td>{$row['ref']}</td>
-                <td>{$row['cname']}</td>
-                <td>{$row['phone']}</td>
-                <td>{$row['sbname']}</td>
-                <td>{$row['dsbname']}</td>
-                <td>{$row['pickup_date']}</td>
-                <td>{$row['pickup_time']}</td>
-                <td>{$row['status']}</td>
+                <td>" . escapeHtml($row['ref']) . "</td>
+                <td>" . escapeHtml($row['cname']) . "</td>
+                <td>" . escapeHtml($row['phone']) . "</td>
+                <td>" . escapeHtml($row['sbname']) . "</td>
+                <td>" . escapeHtml($row['dsbname']) . "</td>
+                <td>" . escapeHtml($row['pickup_date']) . "</td>
+                <td>" . escapeHtml($row['pickup_time']) . "</td>
+                <td>" . escapeHtml($row['status']) . "</td>
             </tr>";
         }
         echo "</table>";
