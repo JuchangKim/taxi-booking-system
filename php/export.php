@@ -17,7 +17,6 @@ function escapeHtml(string $value): string {
  * Unified error handler
  */
 function respondWithError(string $mode, string $message): void {
-    // Ensure no accidental output before headers
     if (!headers_sent()) {
         http_response_code(503);
 
@@ -26,7 +25,6 @@ function respondWithError(string $mode, string $message): void {
         }
     }
 
-    // HTML or update mode prints visible error
     if ($mode === 'html' || $mode === 'update') {
         echo "<p style='color:red; font-weight:bold;'>$message</p>";
     } else {
@@ -37,7 +35,7 @@ function respondWithError(string $mode, string $message): void {
 }
 
 $mode = $_GET['mode'] ?? 'download';
-$filePath = __DIR__ . "/booking_history.csv";   // absolute path prevents confusion
+$filePath = __DIR__ . "/booking_history.csv";   // absolute path
 
 // Connect to DB
 $conn = new mysqli($host, $user, $pswd, $dbnm);
@@ -54,19 +52,17 @@ if (!$result) {
     respondWithError($mode, "Booking history could not be loaded from the database.");
 }
 
-// Try writing CSV
+// Write CSV file
 $csvFile = fopen($filePath, 'w');
 if (!$csvFile) {
     respondWithError($mode, "Booking history file could not be written. Check file permissions.");
 }
 
-// Write header row
 fputcsv($csvFile, [
     'Booking Reference', 'Name', 'Phone', 'Pickup Suburb',
     'Destination', 'Date', 'Time', 'Status'
 ]);
 
-// Write rows
 $rows = [];
 while ($row = $result->fetch_assoc()) {
     $rows[] = $row;
