@@ -1,5 +1,3 @@
-version: "3"
-
 services:
 
   php:
@@ -8,6 +6,7 @@ services:
       - "80:80"
     volumes:
       - ./php:/var/www/html
+      - ./php/booking_history.csv:/var/www/html/booking_history.csv
     depends_on:
       - mysql
       - chatbot
@@ -18,7 +17,7 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434/api/generate}
-      - MODEL_NAME=${MODEL_NAME:llama3.2:3b}
+      - MODEL_NAME=${MODEL_NAME}
       - BOOKING_HISTORY_PATH=/app/shared/booking_history.csv
     volumes:
       - ./php/booking_history.csv:/app/shared/booking_history.csv

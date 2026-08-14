@@ -58,4 +58,8 @@ async def ask_question(question: str = Form(...)):
     with open("/app/shared/booking_history.csv", "r", encoding="utf-8") as f:
         summary_text = f.read()
 
-    return StreamingResponse(ollama_stream(question, summary_text), media_type="text/plain")
+    return StreamingResponse(
+        ollama_stream(question, summary_text),
+        media_type="text/plain",
+        headers={"Transfer-Encoding": "chunked"}
+    )
