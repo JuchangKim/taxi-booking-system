@@ -5,5 +5,4 @@ $host = getenv('DB_HOST') ?: 'mysql';
 $user = getenv('DB_USER') ?: 'user';
 $pswd = getenv('DB_PASSWORD') ?: 'password';
 $dbnm = getenv('DB_NAME') ?: 'taxi_booking';
-?>
 
