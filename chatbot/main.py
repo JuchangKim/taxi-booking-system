@@ -8,7 +8,7 @@ import os
 app = FastAPI()
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/generate")
-MODEL_NAME = os.getenv("MODEL_NAME", "qwen3:8b")
+MODEL_NAME = os.getenv("MODEL_NAME")
 
 # Allow CORS
 app.add_middleware(
