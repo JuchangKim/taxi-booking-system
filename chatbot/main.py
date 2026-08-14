@@ -38,26 +38,40 @@ Answer concisely based on the booking data.
         "stream": True
     }
 
-    response = requests.post(OLLAMA_URL, json=payload, stream=True)
-
-    if response.status_code != 200:
-        yield f"Error: {response.text}"
+    try:
+        response = requests.post(OLLAMA_URL, json=payload, stream=True)
+    except Exception as e:
+        yield f"Error connecting to Ollama: {str(e)}".encode("utf-8")
         return
 
+    if response.status_code != 200:
+        yield f"Error: {response.text}".encode("utf-8")
+        return
+
+    # STREAM FIX: yield bytes, not strings
     for line in response.iter_lines():
         if line:
             try:
-                data = json.loads(line.decode('utf-8'))
+                data = json.loads(line.decode("utf-8"))
                 token = data.get("response", "")
-                yield token
+                yield token.encode("utf-8")   # <-- FIXED
             except json.JSONDecodeError:
-                continue  # Ignore malformed lines (Ollama sometimes sends keep-alive)
+                continue
+
 
 @app.post("/ask")
 async def ask_question(question: str = Form(...)):
-    with open("/app/shared/booking_history.csv", "r", encoding="utf-8") as f:
-        summary_text = f.read()
+    # Read booking history CSV
+    try:
+        with open("/app/shared/booking_history.csv", "r", encoding="utf-8") as f:
+            summary_text = f.read()
+    except Exception as e:
+        return StreamingResponse(
+            iter([f"Error reading booking history: {str(e)}".encode("utf-8")]),
+            media_type="text/plain"
+        )
 
+    # STREAM FIX: enable chunked encoding
     return StreamingResponse(
         ollama_stream(question, summary_text),
         media_type="text/plain",
