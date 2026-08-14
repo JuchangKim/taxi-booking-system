@@ -20,7 +20,7 @@ function respondWithError(string $mode, string $message): void {
     exit;
 }
 
-$filePath = "booking_history.csv";
+$filePath = __DIR__ . "/booking_history.csv";
 $mode = $_GET['mode'] ?? 'download';
 
 $conn = new mysqli($host, $user, $pswd, $dbnm);
