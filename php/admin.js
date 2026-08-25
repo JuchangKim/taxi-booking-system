@@ -1,7 +1,15 @@
 // admin.js
 
+const currentDocument = () => globalThis.document || document;
+const currentWindow = () => globalThis.window || window;
+let adminInitializationRan = false;
+
 function setConfirmMessage(message, isError = false) {
-    const confirmBox = document.getElementById('confirm');
+    const confirmBox = currentDocument().getElementById('confirm');
+    if (!confirmBox) {
+        return;
+    }
+
     confirmBox.innerHTML = message;
     confirmBox.style.display = message ? 'block' : 'none';
     confirmBox.style.color = isError ? 'red' : 'green';
@@ -10,7 +18,11 @@ function setConfirmMessage(message, isError = false) {
 }
 
 async function fetchBookings(ref = '', showAll = false) {
-    const content = document.getElementById('content');
+    const content = currentDocument().getElementById('content');
+    if (!content) {
+        return;
+    }
+
     content.innerHTML = '<p>Loading bookings...</p>';
 
     try {
@@ -22,7 +34,6 @@ async function fetchBookings(ref = '', showAll = false) {
         } else {
             formData.append('ref', ref);
         }
-
 
         const response = await fetch('admin.php', { method: 'POST', body: formData });
         const html = await response.text();
@@ -41,7 +52,7 @@ async function fetchBookings(ref = '', showAll = false) {
     }
 }
 
-window.assign = async (ref, event) => {
+currentWindow().assign = async (ref, event) => {
     const buttonEl = event.target;
     buttonEl.disabled = true;
 
@@ -70,8 +81,8 @@ window.assign = async (ref, event) => {
     }
 };
 
-window.deleteBooking = async (ref, event) => {
-    if (!window.confirm(`Are you sure you want to delete booking ${ref}?`)) {
+currentWindow().deleteBooking = async (ref, event) => {
+    if (!currentWindow().confirm(`Are you sure you want to delete booking ${ref}?`)) {
         return;
     }
 
@@ -97,16 +108,25 @@ window.deleteBooking = async (ref, event) => {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    const button = document.getElementById('sbutton');
-    const search = document.getElementById('bsearch');
-    const allButton = document.getElementById('allbutton');
+currentDocument().addEventListener('DOMContentLoaded', () => {
+    if (adminInitializationRan) {
+        return;
+    }
+    adminInitializationRan = true;
+
+    const button = currentDocument().getElementById('sbutton');
+    const search = currentDocument().getElementById('bsearch');
+    const allButton = currentDocument().getElementById('allbutton');
+
+    if (!button || !search || !allButton) {
+        return;
+    }
 
     button.addEventListener('click', () => {
         const ref = search.value.trim();
         if (ref && !/^BRN\d{5}$/.test(ref)) {
             setConfirmMessage('Invalid reference. Format: BRN12345', true);
-            document.getElementById('content').innerHTML = '';
+            currentDocument().getElementById('content').innerHTML = '';
             return;
         }
 
@@ -131,3 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchBookings('');
 });
+
+if (typeof globalThis !== 'undefined') {
+    globalThis.setConfirmMessage = setConfirmMessage;
+    globalThis.fetchBookings = fetchBookings;
+}
+
