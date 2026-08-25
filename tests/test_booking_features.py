@@ -106,7 +106,7 @@ def test_admin_search_and_assignment_logic_exists_in_frontend():
     assert "fetchBookings" in admin_js
     assert "formData.append('ref'" in admin_js
     assert "formData.append('assign'" in admin_js
-    assert "window.assign" in admin_js
+    assert ".assign = async" in admin_js
     assert "search.addEventListener('keydown'" in admin_js
 
 
