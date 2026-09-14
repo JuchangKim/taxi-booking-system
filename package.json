@@ -2,12 +2,20 @@
   "name": "taxi-booking-system",
   "private": true,
   "scripts": {
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/e2e/"
+    ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
   }
